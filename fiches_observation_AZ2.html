@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fiches d'observation — Azaé</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f5f5f5;min-height:100vh;padding:1rem}
+.container{max-width:480px;margin:0 auto}
+.screen{display:none}
+.screen.active{display:block}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e5e5;padding:1rem 1.25rem;margin-bottom:10px}
+.purple{background:#534AB7;color:#EEEDFE;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem}
+.purple .sub{font-size:11px;color:#AFA9EC;margin-bottom:4px}
+.purple .title{font-size:18px;font-weight:600}
+.section-badge{display:inline-block;background:#EEEDFE;color:#3C3489;font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:12px}
+.criteria-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.criteria-row:last-child{border-bottom:none}
+.criteria-text{flex:1;font-size:13px;color:#222;line-height:1.4}
+.stars{display:flex;gap:3px;flex-shrink:0}
+.star{width:28px;height:28px;cursor:pointer;border:none;background:none;font-size:20px;color:#ddd;padding:0;line-height:1}
+.star.filled{color:#534AB7}
+.bonus-row{background:#EEEDFE;border-radius:8px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px}
+.bonus-row .criteria-text{color:#3C3489;font-size:12px}
+textarea{width:100%;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;color:#222;resize:vertical;min-height:72px;font-family:inherit}
+textarea:focus{outline:none;border-color:#534AB7}
+label.lbl{font-size:12px;font-weight:600;color:#666;margin-bottom:6px;display:block}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;background:#fff;color:#222;margin-bottom:1.5rem}
+input[type=text]:focus{outline:none;border-color:#534AB7}
+.nav-btn{width:100%;padding:12px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #e5e5e5;background:#fff;color:#222;text-align:left;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nav-btn:hover{background:#f9f9f9}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:#666;font-size:13px;margin-bottom:1rem;padding:0}
+.score-bar{height:6px;border-radius:3px;background:#eee;margin-top:4px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;background:#534AB7;transition:width 0.3s}
+.validate-btn{width:100%;margin-top:1rem;padding:12px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.validate-btn:hover{background:#3C3489}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div id="screen-home" class="screen active">
+  <div class="purple">
+    <div class="sub">Azaé — Formation commerciale</div>
+    <div class="title">Fiches d'observation</div>
+  </div>
+  <label class="lbl">Nom de la personne observée</label>
+  <input type="text" id="observee-name" placeholder="Prénom Nom">
+  <div style="font-size:13px;font-weight:600;color:#666;margin-bottom:10px">Choisir l'exercice</div>
+  <div id="fiche-list"></div>
+</div>
+
+<div id="screen-fiche" class="screen">
+  <button class="back-btn" onclick="goHome()">← Retour</button>
+  <div id="fiche-header" class="purple"></div>
+  <div id="fiche-content"></div>
+  <div style="margin-top:1.5rem">
+    <label class="lbl">Preuves observées</label>
+    <textarea id="field-preuves" placeholder="Notez ici les exemples concrets observés..."></textarea>
+  </div>
+  <div style="margin-top:1rem">
+    <label class="lbl">Points forts</label>
+    <textarea id="field-forts" placeholder="Ce que la commerciale fait bien..."></textarea>
+  </div>
+  <div style="margin-top:1rem">
+    <label class="lbl">Points de progrès</label>
+    <textarea id="field-progres" placeholder="Ce qui peut être amélioré..."></textarea>
+  </div>
+  <div style="margin-top:1rem;padding:1rem;background:#f5f5f5;border-radius:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;color:#666;font-weight:600">Score global</span>
+      <span style="font-size:12px;color:#534AB7;font-weight:600" id="score-display">0 / 0</span>
+    </div>
+    <div class="score-bar"><div class="score-fill" id="score-fill" style="width:0%"></div></div>
+  </div>
+  <button class="validate-btn" onclick="validerFiche()">Valider et voir le récapitulatif ✓</button>
+</div>
+
+<div id="screen-recap" class="screen">
+  <button class="back-btn" onclick="goHome()">← Nouvelle évaluation</button>
+  <div id="recap-content"></div>
+</div>
+
+</div>
+<script>
+const fiches = [
+  {id:1,title:"Écoute active",sections:[{label:"Écoute active",criteria:["Pose des questions ouvertes","Invite l'autre à clarifier / préciser","Utilise le silence pour relancer","Utilise la répétition pour relancer","Reformule régulièrement ce que dit l'autre","Propose une synthèse à l'issue de l'échange","Réutilise précisément les mots de l'autre"]}]},
+  {id:2,title:"Le cadrage",sections:[{label:"Cadrage",criteria:["Remercie son client pour son accueil","Utilise un brise-glace pour mettre l'autre à l'aise","Présente les objectifs de la rencontre","Présente comment va se dérouler l'entretien","Valide le temps de disponibilité du client","Invite le client à préciser ses attentes"]}]},
+  {id:3,title:"Se présenter",sections:[{label:"Présentation",criteria:["Se présente clairement (élocution, logique)","Met en avant ses points différenciants","Indique son rôle et sa mission","Présente les points clés de l'entreprise en moins de 2 min"]}]},
+  {id:4,title:"Découverte client",sections:[{label:"Découverte",criteria:["Commence par le déclencheur","Identifie les points de douleur du client","Fait évaluer l'impact des points de douleur","Invite le client à imaginer la solution idéale","S'assure d'avoir identifié tous les leviers de décision (\"quoi d'autre ?\")"],bonus:"A identifié le budget et les personnes impliquées dans la décision"},{label:"Écoute active",criteria:["Pose des questions ouvertes","Invite l'autre à clarifier / préciser","Utilise le silence pour relancer","Utilise la répétition pour relancer","Reformule régulièrement ce que dit l'autre","Propose une synthèse à l'issue de l'échange","Réutilise précisément les mots de l'autre"]}]},
+  {id:5,title:"Présentation de l'offre",sections:[{label:"Présentation de l'offre",criteria:["Commence par les caractéristiques","Poursuit par les avantages","Apporte des preuves (en option)","Transforme la solution en bénéfices client"],bonus:"Une fois le CAB terminé, demande à son client ce qu'il en pense"}]},
+  {id:6,title:"Gestion des objections",sections:[{label:"Gestion des objections",criteria:["Accuse réception de chaque objection","Questionne si nécessaire / possible","Propose une réponse ou fait spécifier une réponse à son client","Valide le traitement de l'objection"]},{label:"Écoute active",criteria:["Utilise les techniques d'écoute active"]}]}
+];
+
+let currentFiche=null,ratings={};
+
+function buildHomeList(){
+  const list=document.getElementById('fiche-list');
+  list.innerHTML='';
+  fiches.forEach(f=>{
+    const btn=document.createElement('button');
+    btn.className='nav-btn';
+    btn.innerHTML=`<span>${f.id}. ${f.title}</span><span>›</span>`;
+    btn.onclick=()=>openFiche(f.id);
+    list.appendChild(btn);
+  });
+}
+
+function openFiche(id){
+  const name=document.getElementById('observee-name').value.trim();
+  if(!name){document.getElementById('observee-name').focus();document.getElementById('observee-name').style.borderColor='#E24B4A';return;}
+  document.getElementById('observee-name').style.borderColor='';
+  currentFiche=fiches.find(f=>f.id===id);
+  ratings={};
+  document.getElementById('field-preuves').value='';
+  document.getElementById('field-forts').value='';
+  document.getElementById('field-progres').value='';
+  document.getElementById('fiche-header').innerHTML=`<div class="sub">Fiche ${id} — ${name}</div><div class="title">${currentFiche.title}</div>`;
+  const content=document.getElementById('fiche-content');
+  content.innerHTML='';
+  currentFiche.sections.forEach((sec,si)=>{
+    const div=document.createElement('div');
+    div.className='card';
+    let html=`<span class="section-badge">${sec.label}</span>`;
+    sec.criteria.forEach((c,ci)=>{
+      const key=`${si}-${ci}`;
+      html+=`<div class="criteria-row"><span class="criteria-text">${c}</span><div class="stars" id="stars-${key}">`;
+      for(let s=1;s<=5;s++) html+=`<button class="star" onclick="rate('${key}',${s})">★</button>`;
+      html+=`</div></div>`;
+    });
+    if(sec.bonus){
+      html+=`<div class="bonus-row"><span class="criteria-text"><strong>Bonus —</strong> ${sec.bonus}</span><div class="stars" id="stars-bonus-${si}">`;
+      for(let s=1;s<=5;s++) html+=`<button class="star" onclick="rateBonus('${si}',${s})">★</button>`;
+      html+=`</div></div>`;
+    }
+    div.innerHTML=html;
+    content.appendChild(div);
+  });
+  updateScore();
+  showScreen('screen-fiche');
+}
+
+function rate(key,val){
+  ratings[key]=val;
+  document.querySelectorAll(`#stars-${key} .star`).forEach((s,i)=>s.classList.toggle('filled',i<val));
+  updateScore();
+}
+
+function rateBonus(si,val){
+  ratings[`bonus-${si}`]=val;
+  document.querySelectorAll(`#stars-bonus-${si} .star`).forEach((s,i)=>s.classList.toggle('filled',i<val));
+}
+
+function updateScore(){
+  let total=0,filled=0;
+  currentFiche.sections.forEach((sec,si)=>{
+    sec.criteria.forEach((c,ci)=>{total+=5;filled+=ratings[`${si}-${ci}`]||0;});
+  });
+  const pct=total>0?Math.round(filled/total*100):0;
+  document.getElementById('score-display').textContent=`${filled} / ${total} pts`;
+  document.getElementById('score-fill').style.width=pct+'%';
+}
+
+function validerFiche(){
+  const name=document.getElementById('observee-name').value.trim();
+  let total=0,filled=0;
+  currentFiche.sections.forEach((sec,si)=>{
+    sec.criteria.forEach((c,ci)=>{total+=5;filled+=ratings[`${si}-${ci}`]||0;});
+  });
+  const pct=total>0?Math.round(filled/total*100):0;
+  const color=pct>=70?'#27500A':pct>=40?'#633806':'#791F1F';
+  const bg=pct>=70?'#EAF3DE':pct>=40?'#FAEEDA':'#FCEBEB';
+  const label=pct>=70?'Bon niveau':pct>=40?'En progression':'À renforcer';
+  let html=`<div class="purple"><div class="sub">Récapitulatif — ${name}</div><div class="title">${currentFiche.title}</div></div>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem;padding:1rem;background:${bg};border-radius:8px">
+    <div style="font-size:28px;font-weight:700;color:${color}">${pct}%</div>
+    <div><div style="font-size:13px;font-weight:600;color:${color}">${label}</div><div style="font-size:12px;color:${color};opacity:0.8">${filled} pts sur ${total}</div></div>
+  </div>`;
+  currentFiche.sections.forEach((sec,si)=>{
+    html+=`<div class="card"><div class="section-badge">${sec.label}</div>`;
+    sec.criteria.forEach((c,ci)=>{
+      const r=ratings[`${si}-${ci}`]||0;
+      html+=`<div class="criteria-row"><span class="criteria-text">${c}</span><span style="color:#534AB7;font-size:14px;flex-shrink:0">${'★'.repeat(r)}${'☆'.repeat(5-r)}</span></div>`;
+    });
+    html+=`</div>`;
+  });
+  const preuves=document.getElementById('field-preuves').value;
+  const forts=document.getElementById('field-forts').value;
+  const progres=document.getElementById('field-progres').value;
+  if(preuves||forts||progres){
+    html+=`<div class="card">`;
+    if(preuves) html+=`<div style="margin-bottom:10px"><label class="lbl">Preuves observées</label><p style="font-size:13px;color:#222;line-height:1.5">${preuves}</p></div>`;
+    if(forts) html+=`<div style="margin-bottom:10px"><label class="lbl">Points forts</label><p style="font-size:13px;color:#222;line-height:1.5">${forts}</p></div>`;
+    if(progres) html+=`<div><label class="lbl">Points de progrès</label><p style="font-size:13px;color:#222;line-height:1.5">${progres}</p></div>`;
+    html+=`</div>`;
+  }
+  document.getElementById('recap-content').innerHTML=html;
+  showScreen('screen-recap');
+}
+
+function goHome(){showScreen('screen-home');}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+buildHomeList();
+</script>
+</body>
+</html>
