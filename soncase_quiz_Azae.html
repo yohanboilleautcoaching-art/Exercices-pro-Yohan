@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz SONCASE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; }
+  .wrap { width: 100%; max-width: 620px; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 0.25rem; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+  .progress-bg { background: #e0dfe0; border-radius: 99px; height: 6px; margin-bottom: 1.5rem; }
+  .progress-fill { background: #534AB7; height: 6px; border-radius: 99px; transition: width 0.4s; }
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; font-size: 13px; color: #666; }
+  .score-badge { font-weight: 600; color: #534AB7; }
+  .verbatim-card { background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; font-size: 16px; font-style: italic; line-height: 1.7; color: #1a1a1a; }
+  .instruction { font-size: 13px; color: #666; margin-bottom: 10px; }
+  .choices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .choice-btn { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 14px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; transition: background 0.15s, border-color 0.15s; font-family: inherit; color: #1a1a1a; }
+  .choice-btn:hover:not(:disabled) { background: #f5f5f5; border-color: #bbb; }
+  .choice-btn.selected { border-color: #7F77DD; background: #EEEDFE; color: #3C3489; }
+  .choice-btn.correct { border-color: #1D9E75; background: #E1F5EE; color: #085041; }
+  .choice-btn.wrong-sel { border-color: #D85A30; background: #FAECE7; color: #4A1B0C; }
+  .choice-btn.missed { border-color: #1D9E75; background: #E1F5EE; color: #085041; opacity: 0.65; }
+  .choice-btn:disabled { cursor: default; }
+  .letter-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .feedback { border-radius: 8px; padding: 1rem 1.25rem; font-size: 14px; line-height: 1.6; margin-bottom: 1rem; }
+  .fb-ok { background: #E1F5EE; color: #085041; border: 1px solid #5DCAA5; }
+  .fb-partial { background: #FAEEDA; color: #412402; border: 1px solid #EF9F27; }
+  .fb-wrong { background: #FAECE7; color: #4A1B0C; border: 1px solid #F0997B; }
+  .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+  .validate-btn { background: #534AB7; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .validate-btn:disabled { opacity: 0.35; cursor: default; }
+  .next-btn { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 24px; font-size: 14px; cursor: pointer; color: #1a1a1a; font-family: inherit; }
+  .next-btn:hover { background: #f5f5f5; }
+  .final-card { background: white; border: 1px solid #e5e5e5; border-radius: 12px; padding: 2.5rem; text-align: center; }
+  .final-score { font-size: 56px; font-weight: 700; color: #534AB7; line-height: 1; margin: 0.5rem 0; }
+  .final-msg { font-size: 15px; color: #555; margin: 0.75rem 0 1.5rem; }
+  .restart-btn { background: #534AB7; color: white; border: none; border-radius: 8px; padding: 11px 30px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .restart-btn:hover { background: #3C3489; }
+  @media (max-width: 480px) { .choices-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quiz SONCASE</h1>
+  <p class="subtitle">Identifiez le ou les mobiles d'achat derrière chaque verbatim client</p>
+  <div id="app"></div>
+</div>
+<script>
+const LABELS = {
+  S:  { label: "Sécurité",      bg: "#E6F1FB", col: "#042C53" },
+  O:  { label: "Orgueil",       bg: "#FAECE7", col: "#4A1B0C" },
+  N:  { label: "Nouveauté",     bg: "#EAF3DE", col: "#173404" },
+  C:  { label: "Confort",       bg: "#E1F5EE", col: "#04342C" },
+  A:  { label: "Argent",        bg: "#FAEEDA", col: "#412402" },
+  S2: { label: "Sympathie",     bg: "#FBEAF0", col: "#4B1528" },
+  E:  { label: "Environnement", bg: "#EEEDFE", col: "#26215C" }
+};
+const KEYS = ["S","O","N","C","A","S2","E"];
+const LETTERS = ["S","O","N","C","A","S","E"];
+
+const DATA = [
+  { v: "Je préfère payer un peu plus cher si cela me garantit une personne fiable et bien formée.", ans: ["S","C"], just: "La recherche de fiabilité et de garantie sur l'intervenant (Sécurité) et le fait de ne plus avoir à s'en préoccuper soi-même (Confort)." },
+  { v: "Le repassage me pèse énormément, j'aimerais vraiment m'en débarrasser.", ans: ["C"], just: "Se libérer d'une tâche contraignante pour améliorer son quotidien : moteur Confort." },
+  { v: "Je privilégie les entreprises qui ont une démarche respectueuse de l'environnement.", ans: ["E"], just: "La préférence pour une approche éco-responsable est le moteur Environnement." },
+  { v: "Une amie m'a recommandé votre entreprise et j'ai confiance en son avis.", ans: ["S2"], just: "La recommandation d'une proche et la confiance relationnelle : moteur Sympathie." },
+  { v: "Quand je reçois ma famille, j'aime que ma maison soit irréprochable.", ans: ["O"], just: "L'image irréprochable renvoyée lors des réceptions familiales : moteur Orgueil." },
+  { v: "Je n'ai jamais utilisé ce type de service mais cela pourrait me faire gagner beaucoup de temps.", ans: ["N","C"], just: "Découvrir un nouveau service (Nouveauté) pour gagner du temps et simplifier sa vie (Confort)." },
+  { v: "Je veux être certain que la personne qui viendra chez moi est digne de confiance.", ans: ["S"], just: "La nécessité d'avoir confiance en l'intervenant à domicile : moteur Sécurité." },
+  { v: "Je cherche une solution écologique qui me simplifie aussi le quotidien.", ans: ["E","C"], just: "L'aspect éco-responsable (Environnement) combiné à la simplification du quotidien (Confort)." },
+  { v: "Mon critère principal reste le budget mensuel.", ans: ["A"], just: "Le budget comme critère prioritaire et absolu : moteur Argent." },
+  { v: "C'est important pour moi de ne pas me rabaisser à faire le ménage. D'ailleurs je n'ai pas le temps de m'en occuper.", ans: ["O","C"], just: "\"Se rabaisser\" exprime un sentiment lié au statut social (Orgueil), et le manque de temps renvoie à la simplification du quotidien (Confort)." },
+  { v: "J'ai eu un très bon contact avec votre conseillère lors de notre premier échange. J'aimerais bien pouvoir la garder comme interlocutrice.", ans: ["S2"], just: "L'attachement relationnel à la conseillère et le souhait de continuité : moteur Sympathie." },
+  { v: "Je n'ai jamais essayé les services à domicile mais j'aimerais voir ce que cela peut m'apporter.", ans: ["N"], just: "La curiosité pour un service encore jamais expérimenté : moteur Nouveauté." },
+  { v: "Je cherche la formule la plus avantageuse financièrement avec le crédit d'impôt.", ans: ["A"], just: "Optimiser le coût grâce au crédit d'impôt : moteur Argent." },
+  { v: "J'aimerais limiter l'utilisation de produits chimiques à la maison.", ans: ["E"], just: "Réduire les produits chimiques pour préserver l'environnement : moteur Environnement." },
+  { v: "Je veux récupérer du temps pour ma famille plutôt que faire le ménage.", ans: ["C"], just: "Libérer du temps précieux pour se consacrer à sa famille : moteur Confort." },
+  { v: "J'aimerais pouvoir suivre mes interventions en temps réel depuis une application dédiée.", ans: ["N"], just: "L'attrait pour la technologie et le pilotage digital comme argument différenciant : moteur Nouveauté." },
+  { v: "Je veux que l'intervenant à mon domicile soit agréable et souriant.", ans: ["S2"], just: "Le besoin d'une relation chaleureuse et agréable avec l'intervenant : moteur Sympathie." },
+];
+
+let cur = 0, score = 0, sel = [], validated = false;
+
+function render() {
+  const app = document.getElementById("app");
+  if (cur >= DATA.length) { app.innerHTML = renderFinal(); document.getElementById("restartBtn").onclick = restart; return; }
+  const q = DATA[cur];
+  app.innerHTML = `
+    <div class="meta"><span>Question ${cur+1} / ${DATA.length}</span><span class="score-badge">&#9733; ${score} pt${score>1?'s':''}</span></div>
+    <div class="progress-bg"><div class="progress-fill" style="width:${(cur/DATA.length)*100}%"></div></div>
+    <div class="verbatim-card">"${q.v}"</div>
+    <p class="instruction">Cochez le ou les mobiles SONCASE correspondants :</p>
+    <div class="choices-grid" id="cg"></div>
+    <div id="fb"></div>
+    <div class="btn-row" id="br">
+      <button class="validate-btn" id="vBtn" onclick="validate()" ${sel.length===0?'disabled':''}>Valider</button>
+    </div>
+  `;
+  renderChoices();
+}
+
+function renderChoices() {
+  document.getElementById("cg").innerHTML = KEYS.map((k,i) => {
+    const info = LABELS[k];
+    const isAns = DATA[cur].ans.includes(k);
+    const isSel = sel.includes(k);
+    let cls = "choice-btn";
+    if (validated) {
+      if (isAns && isSel) cls += " correct";
+      else if (!isAns && isSel) cls += " wrong-sel";
+      else if (isAns && !isSel) cls += " missed";
+    } else if (isSel) cls += " selected";
+    return `<button class="${cls}" ${validated?"disabled":""} onclick="toggle('${k}')">
+      <span class="letter-dot" style="background:${info.bg};color:${info.col}">${LETTERS[i]}</span>${info.label}
+    </button>`;
+  }).join("");
+}
+
+function toggle(k) {
+  if (validated) return;
+  const i = sel.indexOf(k);
+  if (i>-1) sel.splice(i,1); else sel.push(k);
+  renderChoices();
+  document.getElementById("vBtn").disabled = sel.length===0;
+}
+
+function validate() {
+  validated = true;
+  const ans = DATA[cur].ans;
+  const allRight = ans.every(k=>sel.includes(k)) && sel.every(k=>ans.includes(k));
+  const partial = ans.some(k=>sel.includes(k)) && !allRight;
+  let pts=0, cls="fb-wrong", icon="✗", title="Pas tout à fait.";
+  if (allRight) { pts=1; cls="fb-ok"; icon="✓"; title="Bonne réponse !"; }
+  else if (partial) { cls="fb-partial"; icon="△"; title="Partiellement correct."; }
+  score += pts;
+  const ansLabels = ans.map(k=>LABELS[k].label).join(" + ");
+  document.getElementById("fb").innerHTML = `<div class="feedback ${cls}"><strong>${icon} ${title}</strong> Réponse attendue : <strong>${ansLabels}</strong><br>${DATA[cur].just}</div>`;
+  renderChoices();
+  document.getElementById("br").innerHTML = `
+    <button class="validate-btn" disabled>Valider</button>
+    <button class="next-btn" onclick="nextQ()">${cur===DATA.length-1?"Voir le résultat &rarr;":"Question suivante &rarr;"}</button>
+  `;
+}
+
+function nextQ() { cur++; sel=[]; validated=false; render(); }
+
+function restart() { cur=0; score=0; sel=[]; validated=false; render(); }
+
+function renderFinal() {
+  const pct = Math.round((score/DATA.length)*100);
+  const msg = score>=15?"Excellent ! Vous maîtrisez très bien le SONCASE !":score>=11?"Bien joué, vous avez de bons réflexes SONCASE.":score>=8?"Pas mal — quelques nuances à retravailler.":"Continuez à pratiquer, la méthode va s'ancrer !";
+  return `<div class="final-card">
+    <div style="font-size:14px;color:#666;margin-bottom:4px">Score final</div>
+    <div class="final-score">${score}<span style="font-size:28px;color:#999"> / ${DATA.length}</span></div>
+    <div class="final-msg">${msg}</div>
+    <div class="progress-bg" style="margin-bottom:1.5rem"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <button class="restart-btn" id="restartBtn">Recommencer</button>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
