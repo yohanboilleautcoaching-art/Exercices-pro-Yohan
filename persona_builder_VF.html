@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Persona Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --purple: #534AB7;
+    --purple-dark: #3C3489;
+    --purple-light: #EEEDFE;
+    --purple-mid: #CECBF6;
+    --accent: #F0884D;
+    --bg: #F7F6FF;
+    --white: #ffffff;
+    --text: #1a1830;
+    --muted: #6b6880;
+    --border: #E2E0F5;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--purple-dark); padding: 24px 40px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  header .tagline { font-size: 12px; color: var(--purple-mid); margin-top: 2px; }
+  .step-bar { background: var(--purple); padding: 0 40px; display: flex; gap: 0; overflow-x: auto; }
+  .step-pill { padding: 12px 20px; font-size: 12px; font-weight: 500; color: #AFA9EC; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .step-pill.active { color: #fff; border-bottom-color: var(--accent); }
+  .step-pill.done { color: var(--purple-mid); }
+  .step-pill .num { display: inline-flex; width: 18px; height: 18px; background: rgba(255,255,255,0.15); border-radius: 50%; align-items: center; justify-content: center; font-size: 10px; margin-right: 6px; }
+  .step-pill.active .num { background: var(--accent); color: #fff; }
+  .step-pill.done .num { background: #1D9E75; color: #fff; }
+  .container { max-width: 800px; margin: 0 auto; padding: 40px 24px 80px; }
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .panel-header { margin-bottom: 32px; }
+  .panel-header .label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .panel-header h2 { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1.2; }
+  .panel-header p { margin-top: 10px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .field { margin-bottom: 24px; }
+  .field label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+  .field label .hint { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 6px; }
+  input[type="text"], textarea { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: var(--white); transition: border-color 0.2s, box-shadow 0.2s; outline: none; resize: vertical; }
+  input[type="text"]:focus, textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(83,74,183,0.1); }
+  textarea { min-height: 100px; }
+  textarea.short { min-height: 72px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .sub-label { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--purple); margin-bottom: 16px; margin-top: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .tag-input-wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--white); min-height: 52px; cursor: text; transition: border-color 0.2s; }
+  .tag-input-wrap:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(83,74,183,0.1); }
+  .tag { display: inline-flex; align-items: center; gap: 6px; background: var(--purple-light); color: var(--purple-dark); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+  .tag button { background: none; border: none; cursor: pointer; color: var(--purple); font-size: 14px; line-height: 1; padding: 0; }
+  .tag-input { border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); flex: 1; min-width: 120px; padding: 2px 4px; }
+  .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .btn { padding: 12px 28px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:hover { background: var(--purple-dark); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--purple); color: var(--purple); }
+  .btn-accent { background: var(--accent); color: #fff; display: flex; align-items: center; gap: 8px; }
+  .btn-accent:hover { background: #e07035; transform: translateY(-1px); }
+  .progress-text { font-size: 12px; color: var(--muted); }
+  .synthese { display: none; }
+  .synthese.active { display: block; animation: fadeIn 0.3s ease; }
+  .synthese-header { background: var(--purple-dark); border-radius: 14px; padding: 28px 32px; margin-bottom: 24px; color: #fff; }
+  .synthese-header h2 { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+  .synthese-header .meta { font-size: 13px; color: var(--purple-mid); margin-top: 6px; }
+  .synthese-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .synthese-card { background: var(--white); border-radius: 12px; padding: 20px 22px; border: 1.5px solid var(--border); }
+  .synthese-card.full { grid-column: 1 / -1; }
+  .synthese-card .card-label { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--purple); margin-bottom: 10px; }
+  .synthese-card p, .synthese-card li { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .tags-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .tags-display .tag { font-size: 11px; }
+  .download-bar { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Buyer Persona Builder</h1>
+    <div class="tagline">Construisez votre persona acheteur étape par étape</div>
+  </div>
+</header>
+
+<div class="step-bar" id="stepBar">
+  <div class="step-pill active" onclick="goTo(0)"><span class="num">1</span> Identité</div>
+  <div class="step-pill" onclick="goTo(1)"><span class="num">2</span> Missions et enjeux</div>
+  <div class="step-pill" onclick="goTo(2)"><span class="num">3</span> Douleurs</div>
+  <div class="step-pill" onclick="goTo(3)"><span class="num">4</span> Freins</div>
+  <div class="step-pill" onclick="goTo(4)"><span class="num">5</span> Canaux</div>
+  <div class="step-pill" onclick="goTo(5)"><span class="num">6</span> Déclencheurs</div>
+</div>
+
+<div class="container">
+
+  <!-- ÉTAPE 1 : Identité -->
+  <div class="step-panel active" id="step-0">
+    <div class="panel-header">
+      <div class="label">Étape 1 / 6</div>
+      <h2>Identité professionnelle</h2>
+      <p>Qui est cet interlocuteur dans l'entreprise ? Quel est son rôle dans le processus d'achat ?</p>
+    </div>
+    <div class="field field-row">
+      <div>
+        <label>Prénom fictif du persona</label>
+        <input type="text" id="prenom" placeholder="ex : Marc">
+      </div>
+      <div>
+        <label>Intitulé de poste</label>
+        <input type="text" id="titre" placeholder="ex : Directeur Achats">
+      </div>
+    </div>
+    <div class="field field-row">
+      <div>
+        <label>Secteur d'activité</label>
+        <input type="text" id="secteur" placeholder="ex : Revendeur IT">
+      </div>
+      <div>
+        <label>Taille de l'entreprise</label>
+        <input type="text" id="taille" placeholder="ex : 20 à 80 salariés">
+      </div>
+    </div>
+    <div class="field">
+      <label>Rôle dans le processus d'achat <span class="hint">Entrée pour valider chaque tag</span></label>
+      <div class="tag-input-wrap" id="role-wrap" onclick="document.getElementById('role-input').focus()">
+        <input class="tag-input" id="role-input" placeholder="ex : Décideur, Prescripteur..." onkeydown="addTag(event, 'role-wrap', 'role-input', 'roles')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Position dans la hiérarchie</label>
+      <input type="text" id="hierarchie" placeholder="ex : Membre du CODIR, reporte au PDG">
+    </div>
+    <div class="nav-buttons">
+      <span class="progress-text">1 / 6</span>
+      <button class="btn btn-primary" onclick="next(0)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 2 : Missions et enjeux (fusionnés) -->
+  <div class="step-panel" id="step-1">
+    <div class="panel-header">
+      <div class="label">Étape 2 / 6</div>
+      <h2>Missions et enjeux</h2>
+      <p>Ce dont il est garant au quotidien, et ce sur quoi il sera jugé.</p>
+    </div>
+    <div class="sub-label">Ce qu'il fait — ancré dans le présent</div>
+    <div class="field">
+      <label>Responsabilités principales</label>
+      <textarea id="responsabilites" placeholder="ex : Gérer les relations fournisseurs, négocier les conditions d'achat, optimiser les marges sur les produits référencés..."></textarea>
+    </div>
+    <div class="sub-label">Ce sur quoi il sera jugé dans 12 mois</div>
+    <div class="field">
+      <label>Objectifs et indicateurs de performance (KPIs) <span class="hint">Entrée pour valider</span></label>
+      <div class="tag-input-wrap" id="kpi-wrap" onclick="document.getElementById('kpi-input').focus()">
+        <input class="tag-input" id="kpi-input" placeholder="ex : Marge brute, Délai de livraison, Taux de satisfaction clients..." onkeydown="addTag(event, 'kpi-wrap', 'kpi-input', 'kpis')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ce qu'il cherche à accomplir à moyen terme</label>
+      <textarea class="short" id="objectifs" placeholder="ex : Diversifier le panel fournisseurs, améliorer la marge sur les gammes hardware, fidéliser les clients finaux grâce à une offre différenciante..."></textarea>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prev(1)">← Retour</button>
+      <span class="progress-text">2 / 6</span>
+      <button class="btn btn-primary" onclick="next(1)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 3 : Douleurs -->
+  <div class="step-panel" id="step-2">
+    <div class="panel-header">
+      <div class="label">Étape 3 / 6</div>
+      <h2>Douleurs</h2>
+      <p>Ce qui le pénalise aujourd'hui dans son activité — ce qui lui coûte du temps, de l'énergie ou de l'argent.</p>
+    </div>
+    <div class="field">
+      <label>Problèmes opérationnels récurrents</label>
+      <textarea id="douleurs-ops" placeholder="ex : Délais de livraison imprévisibles, ruptures de stock fréquentes, SAV lent chez les fournisseurs actuels..."></textarea>
+    </div>
+    <div class="field">
+      <label>Frustration dans sa capacité à satisfaire la demande de ses clients</label>
+      <textarea class="short" id="douleurs-clients" placeholder="ex : Incapable de répondre à certaines configurations demandées, délais trop longs pour des commandes urgentes, gamme actuelle insuffisante pour le segment haut de gamme..."></textarea>
+    </div>
+    <div class="field">
+      <label>Frustrations dans sa relation aux fournisseurs</label>
+      <textarea class="short" id="douleurs-four" placeholder="ex : Manque de transparence sur les marges, peu de support commercial, absence de formation produit..."></textarea>
+    </div>
+    <div class="field">
+      <label>Ce qui l'empêche de dormir — enjeu critique</label>
+      <input type="text" id="douleurs-top" placeholder="ex : Perdre un client clé sur une affaire hardware faute d'un produit compétitif">
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prev(2)">← Retour</button>
+      <span class="progress-text">3 / 6</span>
+      <button class="btn btn-primary" onclick="next(2)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 4 : Freins -->
+  <div class="step-panel" id="step-3">
+    <div class="panel-header">
+      <div class="label">Étape 4 / 6</div>
+      <h2>Freins et objections</h2>
+      <p>Ce qui le retient de changer de fournisseur ou d'en référencer un nouveau.</p>
+    </div>
+    <div class="field">
+      <label>Objections anticipées <span class="hint">Entrée pour valider</span></label>
+      <div class="tag-input-wrap" id="objections-wrap" onclick="document.getElementById('objections-input').focus()">
+        <input class="tag-input" id="objections-input" placeholder="ex : Marque inconnue, Prix trop élevé..." onkeydown="addTag(event, 'objections-wrap', 'objections-input', 'objections')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Risques perçus à changer de fournisseur</label>
+      <textarea class="short" id="risques" placeholder="ex : Peur de décevoir ses clients avec une marque non reconnue, risque sur les délais pendant la transition..."></textarea>
+    </div>
+    <div class="field">
+      <label>Contraintes internes (budget, processus, hiérarchie)</label>
+      <textarea class="short" id="contraintes" placeholder="ex : Référencement validé par un groupement d'achats, budget annuel figé, besoin de l'aval du PDG..."></textarea>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prev(3)">← Retour</button>
+      <span class="progress-text">4 / 6</span>
+      <button class="btn btn-primary" onclick="next(3)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 5 : Canaux -->
+  <div class="step-panel" id="step-4">
+    <div class="panel-header">
+      <div class="label">Étape 5 / 6</div>
+      <h2>Canaux et habitudes</h2>
+      <p>Comment s'informe-t-il ? Où est-il joignable ? Quel contenu consomme-t-il ?</p>
+    </div>
+    <div class="field">
+      <label>Canaux de communication préférés <span class="hint">Entrée pour valider</span></label>
+      <div class="tag-input-wrap" id="canaux-wrap" onclick="document.getElementById('canaux-input').focus()">
+        <input class="tag-input" id="canaux-input" placeholder="ex : Email, LinkedIn, Téléphone..." onkeydown="addTag(event, 'canaux-wrap', 'canaux-input', 'canaux')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Sources d'information professionnelle</label>
+      <textarea class="short" id="sources" placeholder="ex : Salons IT, newsletters sectorielles, recommandations pairs, LinkedIn..."></textarea>
+    </div>
+    <div class="field">
+      <label>Meilleur moment pour le contacter</label>
+      <input type="text" id="moment" placeholder="ex : Mardi ou mercredi matin, 9h-11h — en dehors des périodes de bilan et en début de trimestre">
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prev(4)">← Retour</button>
+      <span class="progress-text">5 / 6</span>
+      <button class="btn btn-primary" onclick="next(4)">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 6 : Déclencheurs -->
+  <div class="step-panel" id="step-5">
+    <div class="panel-header">
+      <div class="label">Étape 6 / 6</div>
+      <h2>Déclencheurs d'achat</h2>
+      <p>Ce qui le pousse à agir maintenant plutôt que plus tard.</p>
+    </div>
+    <div class="field">
+      <label>Événements déclencheurs internes <span class="hint">Entrée pour valider</span></label>
+      <div class="tag-input-wrap" id="declencheurs-int-wrap" onclick="document.getElementById('declencheurs-int-input').focus()">
+        <input class="tag-input" id="declencheurs-int-input" placeholder="ex : Perte d'un fournisseur, Recrutement commercial..." onkeydown="addTag(event, 'declencheurs-int-wrap', 'declencheurs-int-input', 'declencheurs_int')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Événements déclencheurs externes <span class="hint">Entrée pour valider</span></label>
+      <div class="tag-input-wrap" id="declencheurs-ext-wrap" onclick="document.getElementById('declencheurs-ext-input').focus()">
+        <input class="tag-input" id="declencheurs-ext-input" placeholder="ex : Pénurie composants, Hausse des prix..." onkeydown="addTag(event, 'declencheurs-ext-wrap', 'declencheurs-ext-input', 'declencheurs_ext')">
+      </div>
+    </div>
+    <div class="field">
+      <label>Ce qui déclencherait immédiatement une conversation</label>
+      <textarea class="short" id="declencheur-top" placeholder="ex : Une démo produit avec chiffres de marge clairs, un retour d'expérience d'un revendeur similaire..."></textarea>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="prev(5)">← Retour</button>
+      <span class="progress-text">6 / 6</span>
+      <button class="btn btn-primary" onclick="showSynthese()">Voir la synthèse →</button>
+    </div>
+  </div>
+
+  <!-- SYNTHÈSE -->
+  <div class="synthese" id="synthese">
+    <div class="synthese-header">
+      <h2 id="syn-titre">Buyer Persona</h2>
+      <div class="meta" id="syn-meta"></div>
+    </div>
+    <div class="synthese-grid">
+      <div class="synthese-card">
+        <div class="card-label">Identité professionnelle</div>
+        <div id="syn-identite"></div>
+      </div>
+      <div class="synthese-card">
+        <div class="card-label">Missions et enjeux</div>
+        <div id="syn-missions"></div>
+      </div>
+      <div class="synthese-card full">
+        <div class="card-label">Douleurs</div>
+        <div id="syn-douleurs"></div>
+      </div>
+      <div class="synthese-card">
+        <div class="card-label">Freins et objections</div>
+        <div id="syn-freins"></div>
+      </div>
+      <div class="synthese-card">
+        <div class="card-label">Canaux et habitudes</div>
+        <div id="syn-canaux"></div>
+      </div>
+      <div class="synthese-card full">
+        <div class="card-label">Déclencheurs d'achat</div>
+        <div id="syn-declencheurs"></div>
+      </div>
+    </div>
+    <div class="download-bar">
+      <button class="btn btn-secondary" onclick="resetForm()">← Recommencer</button>
+      <button class="btn btn-accent" onclick="downloadPDF()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Télécharger en PDF
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tags = { roles: [], kpis: [], objections: [], canaux: [], declencheurs_int: [], declencheurs_ext: [] };
+  let currentStep = 0;
+
+  function addTag(e, wrapId, inputId, key) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const input = document.getElementById(inputId);
+      const val = input.value.trim();
+      if (!val) return;
+      tags[key].push(val);
+      input.value = '';
+      renderTags(wrapId, inputId, key);
+    }
+  }
+
+  function renderTags(wrapId, inputId, key) {
+    const wrap = document.getElementById(wrapId);
+    const input = document.getElementById(inputId);
+    wrap.innerHTML = '';
+    tags[key].forEach((t, i) => {
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.innerHTML = `${t}<button onclick="removeTag('${wrapId}','${inputId}','${key}',${i})">×</button>`;
+      wrap.appendChild(tag);
+    });
+    wrap.appendChild(input);
+  }
+
+  function removeTag(wrapId, inputId, key, idx) {
+    tags[key].splice(idx, 1);
+    renderTags(wrapId, inputId, key);
+  }
+
+  function goTo(step) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('synthese').classList.remove('active');
+    document.querySelectorAll('.step-pill').forEach((p, i) => {
+      p.classList.remove('active', 'done');
+      if (i < step) p.classList.add('done');
+      if (i === step) p.classList.add('active');
+    });
+    currentStep = step;
+    document.getElementById(`step-${step}`).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function next(step) { goTo(step + 1); }
+  function prev(step) { goTo(step - 1); }
+
+  function showSynthese() {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.step-pill').forEach(p => { p.classList.remove('active'); p.classList.add('done'); });
+
+    document.getElementById('syn-titre').textContent = `${v('prenom') || 'Persona'} — ${v('titre') || ''}`;
+    document.getElementById('syn-meta').textContent = `${v('secteur') || ''} · ${v('taille') || ''}`;
+
+    document.getElementById('syn-identite').innerHTML = `
+      <p><strong>Rôle :</strong> ${tags.roles.join(', ') || '—'}</p>
+      <p style="margin-top:6px"><strong>Hiérarchie :</strong> ${v('hierarchie') || '—'}</p>
+    `;
+
+    document.getElementById('syn-missions').innerHTML = `
+      <p>${v('responsabilites') || '—'}</p>
+      ${tags.kpis.length ? `<div class="tags-display" style="margin-top:10px">${tags.kpis.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      ${v('objectifs') ? `<p style="margin-top:8px"><em>${v('objectifs')}</em></p>` : ''}
+    `;
+
+    document.getElementById('syn-douleurs').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <p style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Opérationnelles</p>
+          <p style="font-size:13px;color:var(--muted)">${v('douleurs-ops') || '—'}</p>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Satisfaction clients</p>
+          <p style="font-size:13px;color:var(--muted)">${v('douleurs-clients') || '—'}</p>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Fournisseurs</p>
+          <p style="font-size:13px;color:var(--muted)">${v('douleurs-four') || '—'}</p>
+        </div>
+      </div>
+      ${v('douleurs-top') ? `<p style="margin-top:14px;padding:10px 14px;background:#FFF0F0;border-radius:8px;color:#A32D2D;font-size:13px;font-weight:500">⚠ ${v('douleurs-top')}</p>` : ''}
+    `;
+
+    document.getElementById('syn-freins').innerHTML = `
+      ${tags.objections.length ? `<div class="tags-display" style="margin-bottom:10px">${tags.objections.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <p style="font-size:13px;color:var(--muted)">${v('risques') || '—'}</p>
+      ${v('contraintes') ? `<p style="margin-top:6px;font-size:13px;color:var(--muted)">${v('contraintes')}</p>` : ''}
+    `;
+
+    document.getElementById('syn-canaux').innerHTML = `
+      ${tags.canaux.length ? `<div class="tags-display" style="margin-bottom:10px">${tags.canaux.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <p style="font-size:13px;color:var(--muted)">${v('sources') || '—'}</p>
+      ${v('moment') ? `<p style="margin-top:6px;font-size:13px;color:var(--muted);font-style:italic">${v('moment')}</p>` : ''}
+    `;
+
+    document.getElementById('syn-declencheurs').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <p style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Internes</p>
+          <div class="tags-display">${tags.declencheurs_int.map(t => `<span class="tag">${t}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>'}</div>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Externes</p>
+          <div class="tags-display">${tags.declencheurs_ext.map(t => `<span class="tag">${t}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>'}</div>
+        </div>
+      </div>
+      ${v('declencheur-top') ? `<p style="margin-top:12px;padding:10px 14px;background:#FFF3ED;border-radius:8px;color:#994020;font-size:13px">${v('declencheur-top')}</p>` : ''}
+    `;
+
+    document.getElementById('synthese').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function v(id) { return document.getElementById(id)?.value?.trim() || ''; }
+
+  function resetForm() {
+    document.getElementById('synthese').classList.remove('active');
+    Object.keys(tags).forEach(k => tags[k] = []);
+    document.querySelectorAll('input[type=text], textarea').forEach(el => el.value = '');
+    goTo(0);
+  }
+
+  function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const purple = [83, 74, 183], purpleDark = [60, 52, 137], purpleLight = [238, 237, 254];
+    const textDark = [26, 24, 48], white = [255, 255, 255];
+    const W = 210, margin = 16;
+    let y = 0;
+
+    doc.setFillColor(...purpleDark);
+    doc.rect(0, 0, W, 36, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(...white);
+    doc.text(`${v('prenom') || 'Persona'} — ${v('titre') || ''}`, margin, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(206, 203, 246);
+    doc.text(`${v('secteur') || ''} · ${v('taille') || ''}`, margin, 26);
+    doc.setFontSize(9);
+    doc.text('Buyer Persona', W - margin, 16, { align: 'right' });
+    y = 44;
+
+    const sections = [
+      {
+        title: 'Identité professionnelle',
+        content: [
+          `Rôle : ${tags.roles.join(', ') || '—'}`,
+          `Hiérarchie : ${v('hierarchie') || '—'}`
+        ]
+      },
+      {
+        title: 'Missions et enjeux',
+        content: [
+          v('responsabilites') || '—',
+          tags.kpis.length ? `KPIs : ${tags.kpis.join(', ')}` : null,
+          v('objectifs') ? `Objectifs : ${v('objectifs')}` : null
+        ].filter(Boolean)
+      },
+      {
+        title: 'Douleurs',
+        content: [
+          v('douleurs-ops') ? `Opérationnelles : ${v('douleurs-ops')}` : null,
+          v('douleurs-clients') ? `Satisfaction clients : ${v('douleurs-clients')}` : null,
+          v('douleurs-four') ? `Fournisseurs : ${v('douleurs-four')}` : null,
+          v('douleurs-top') ? `Enjeu critique : ${v('douleurs-top')}` : null
+        ].filter(Boolean)
+      },
+      {
+        title: 'Freins et objections',
+        content: [
+          tags.objections.length ? `Objections : ${tags.objections.join(', ')}` : null,
+          v('risques') ? `Risques : ${v('risques')}` : null,
+          v('contraintes') ? `Contraintes : ${v('contraintes')}` : null
+        ].filter(Boolean)
+      },
+      {
+        title: 'Canaux et habitudes',
+        content: [
+          tags.canaux.length ? `Canaux : ${tags.canaux.join(', ')}` : null,
+          v('sources') ? `Sources : ${v('sources')}` : null,
+          v('moment') ? `Meilleur moment : ${v('moment')}` : null
+        ].filter(Boolean)
+      },
+      {
+        title: "Déclencheurs d'achat",
+        content: [
+          tags.declencheurs_int.length ? `Internes : ${tags.declencheurs_int.join(', ')}` : null,
+          tags.declencheurs_ext.length ? `Externes : ${tags.declencheurs_ext.join(', ')}` : null,
+          v('declencheur-top') ? `Déclencheur clé : ${v('declencheur-top')}` : null
+        ].filter(Boolean)
+      }
+    ];
+
+    const colW = (W - margin * 2 - 8) / 2;
+    const fullSections = [2, 5];
+
+    sections.forEach((sec, idx) => {
+      const full = fullSections.includes(idx);
+      const col = full ? 0 : idx % 2;
+      const x = margin + col * (colW + 8);
+      const w = full ? W - margin * 2 : colW;
+
+      let textLines = [];
+      sec.content.forEach(line => {
+        textLines = textLines.concat(doc.splitTextToSize(line, w - 12));
+      });
+      const boxH = 14 + textLines.length * 4.5 + 6;
+
+      if (y + boxH > 285) { doc.addPage(); y = 16; }
+
+      doc.setFillColor(...purpleLight);
+      doc.roundedRect(x, y, w, boxH, 3, 3, 'F');
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...purple);
+      doc.text(sec.title.toUpperCase(), x + 6, y + 7);
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...textDark);
+      let ty = y + 14;
+      sec.content.forEach(line => {
+        doc.splitTextToSize(line, w - 12).forEach(l => { doc.text(l, x + 6, ty); ty += 4.5; });
+        ty += 1;
+      });
+
+      if (full || col === 1) y += boxH + 5;
+    });
+
+    doc.setFillColor(...purple);
+    doc.rect(0, 290, W, 7, 'F');
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...white);
+    doc.text('Buyer Persona Builder', margin, 295);
+    doc.text(new Date().toLocaleDateString('fr-FR'), W - margin, 295, { align: 'right' });
+    doc.save(`buyer_persona_${(v('prenom') || 'persona').toLowerCase()}.pdf`);
+  }
+</script>
+</body>
+</html>
