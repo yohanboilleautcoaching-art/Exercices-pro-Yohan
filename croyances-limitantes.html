@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercice individuel — Croyances limitantes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --white: #FFFFFF;
+    --noir: #1A1A1A;
+    --texte: #444444;
+    --gris: #888888;
+    --gris-light: #BBBBBB;
+    --ligne: #E8E8E4;
+    --accent: #C8A951;
+    --accent-light: #F5EDD0;
+    --vert: #7BAF85;
+    --vert-light: #EFF5F0;
+    --surface: #F4F3F0;
+    --shadow: 0 2px 20px rgba(0,0,0,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--texte);
+    min-height: 100vh;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--accent);
+    transition: width 0.5s ease;
+    z-index: 100;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 48px 0 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--ligne);
+    background: var(--white);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow);
+  }
+
+  .header-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .etape-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .etape-badge::before,
+  .etape-badge::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--noir);
+    letter-spacing: -0.01em;
+  }
+
+  .steps-nav {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--ligne);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+  }
+
+  .step-dot.active { background: var(--accent); transform: scale(1.3); }
+  .step-dot.done { background: var(--accent); opacity: 0.4; }
+
+  /* MAIN */
+  .main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ÉTAPE */
+  .etape {
+    display: none;
+    animation: fadeSlide 0.4s ease both;
+  }
+
+  .etape.active { display: block; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* INTRO BLOCK */
+  .intro-block {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 28px;
+    font-size: 13px;
+    color: var(--gris);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .confidentialite {
+    background: var(--surface);
+    border: 1px solid var(--ligne);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 12px;
+    color: var(--gris);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .confidentialite::before {
+    content: '🔒';
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 32px;
+  }
+
+  .section-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--accent-light);
+  }
+
+  .section-title.vert {
+    color: var(--vert);
+    border-bottom-color: var(--vert-light);
+  }
+
+  .question-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--noir);
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  .question-hint {
+    font-size: 11px;
+    color: var(--gris);
+    font-style: italic;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  /* INPUTS */
+  textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid var(--ligne);
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--noir);
+    padding: 8px 0;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s ease;
+    line-height: 1.6;
+  }
+
+  textarea:focus { border-bottom-color: var(--accent); }
+  textarea::placeholder { color: var(--gris-light); font-style: italic; }
+
+  .textarea-encadre {
+    width: 100%;
+    border: 1.5px solid var(--accent);
+    background: var(--accent-light);
+    border-radius: 6px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--noir);
+    padding: 14px 16px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.6;
+  }
+
+  .textarea-encadre:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,169,81,0.12);
+  }
+
+  .textarea-encadre.vert {
+    border-color: var(--vert);
+    background: var(--vert-light);
+  }
+
+  .textarea-encadre.vert:focus {
+    box-shadow: 0 0 0 3px rgba(123,175,133,0.12);
+  }
+
+  /* ABC CHOIX */
+  .abc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .abc-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 16px;
+    border: 1.5px solid var(--ligne);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--white);
+  }
+
+  .abc-item:hover { border-color: var(--accent); background: var(--accent-light); }
+  .abc-item.selected { border-color: var(--accent); background: var(--accent-light); }
+
+  .abc-item input[type="radio"] { display: none; }
+
+  .abc-lettre {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent);
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .abc-texte {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--texte);
+  }
+
+  /* ÉCHELLE */
+  .echelle {
+    display: flex;
+    gap: 6px;
+    margin: 8px 0 4px;
+  }
+
+  .echelle-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    border: 1.5px solid var(--ligne);
+    background: var(--white);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--gris);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .echelle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .echelle-btn.selected { background: var(--accent); border-color: var(--accent); color: var(--white); font-weight: 500; }
+  .echelle-btn.selected.vert { background: var(--vert); border-color: var(--vert); }
+
+  .echelle-hint {
+    font-size: 11px;
+    color: var(--gris);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  /* AMORCES */
+  .amorces {
+    background: var(--surface);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+
+  .amorces p {
+    font-size: 12px;
+    color: var(--gris);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .amorce-item {
+    font-size: 12px;
+    color: var(--texte);
+    font-style: italic;
+    line-height: 1.7;
+    padding-left: 10px;
+    border-left: 2px solid var(--vert);
+    margin: 4px 0;
+  }
+
+  /* CRITÈRES */
+  .criteres {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .critere {
+    font-size: 11px;
+    color: var(--vert);
+    background: var(--vert-light);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* 3P GRID */
+  .ppp-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ppp-item {
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    background: var(--accent-light);
+    padding: 16px;
+  }
+
+  .ppp-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  /* NAVIGATION */
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ligne);
+  }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 12px 28px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--white);
+  }
+
+  .btn-primary:hover { background: #b8952f; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(200,169,81,0.3); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--gris);
+    border: 1.5px solid var(--ligne);
+  }
+
+  .btn-secondary:hover { border-color: var(--gris); color: var(--noir); }
+
+  .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .nav-info {
+    font-size: 11px;
+    color: var(--gris-light);
+  }
+
+  /* SYNTHESE FINALE */
+  .synthese-box {
+    background: var(--noir);
+    border-radius: 10px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+
+  .synthese-box h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--white);
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .synthese-item {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .synthese-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .synthese-label {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .synthese-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: rgba(255,255,255,0.85);
+    font-style: italic;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  .synthese-value.empty { color: rgba(255,255,255,0.2); font-size: 12px; }
+
+  /* SEPARATEUR */
+  .sep {
+    border: none;
+    border-top: 1px solid var(--ligne);
+    margin: 28px 0;
+  }
+
+  .q-group { margin-bottom: 20px; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    font-size: 10px;
+    color: var(--gris-light);
+    letter-spacing: 0.1em;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="etape-badge" id="etapeBadge">Étape 1 sur 5</div>
+    <h1 id="etapeTitre">Exercice individuel</h1>
+    <div class="steps-nav" id="stepsNav"></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ÉTAPE 1 -->
+  <div class="etape active" id="etape-1">
+    <div class="confidentialite">
+      Ce travail est strictement confidentiel. Le partage avec le groupe se fait sur la base du volontariat uniquement.
+    </div>
+
+    <div class="section">
+      <div class="section-title">Identifiez votre situation</div>
+      <p class="question-hint">Lisez ces trois questions. Prenez le temps d'y répondre intérieurement — puis sélectionnez celle qui résonne le plus pour vous.</p>
+
+      <div class="abc-grid">
+        <label class="abc-item" id="abc-a">
+          <input type="radio" name="abc" value="a">
+          <span class="abc-lettre">A</span>
+          <span class="abc-texte">Y a-t-il un domaine professionnel où, au fond de vous, vous doutez de votre légitimité — même si personne autour de vous ne le sait ?</span>
+        </label>
+        <label class="abc-item" id="abc-b">
+          <input type="radio" name="abc" value="b">
+          <span class="abc-lettre">B</span>
+          <span class="abc-texte">Y a-t-il quelque chose que vous voyez faire par d'autres, et où vous vous dites intérieurement « ça, ce n'est pas pour moi » — sans vraiment savoir pourquoi ?</span>
+        </label>
+        <label class="abc-item" id="abc-c">
+          <input type="radio" name="abc" value="c">
+          <span class="abc-lettre">C</span>
+          <span class="abc-texte">Y a-t-il une ambition, une prise de position, une façon d'être au travail que vous vous interdisez — pas parce que c'est impossible, mais parce que vous ne vous sentez pas capable ou légitime ?</span>
+        </label>
+      </div>
+
+      <div class="q-group">
+        <div class="question-label">À partir de cette question, décrivez la situation que vous avez en tête :</div>
+        <div class="question-hint">De quoi s'agit-il ? Dans quel contexte cela se passe-t-il ? Depuis quand ?</div>
+        <textarea id="situation" rows="3" placeholder="Décrivez la situation en quelques lignes..."></textarea>
+      </div>
+
+      <hr class="sep">
+      <div class="question-label">Comment cela se manifeste-t-il ?</div>
+
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce que vous vous dites dans ces moments-là ?</div>
+        <textarea id="dit" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce que vous ressentez ?</div>
+        <textarea id="ressent" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce que vous faites — ou évitez de faire ?</div>
+        <textarea id="fait" rows="2" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="nav">
+      <span class="nav-info"></span>
+      <button class="btn btn-primary" onclick="goTo(2)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 2 -->
+  <div class="etape" id="etape-2">
+    <div class="intro-block">
+      Vous venez de décrire ce que vous vivez en surface — ce que vous faites, ressentez, vous dites. Derrière ces réactions, il y a souvent une conviction plus profonde sur vous-même. Prenez 2 minutes avant d'écrire. Ne répondez pas trop vite.
+    </div>
+
+    <div class="section">
+      <div class="section-title">La petite voix intérieure</div>
+      <p class="question-hint">Dans ces moments-là, une voix intérieure prend la parole — rapide, automatique, souvent à peine consciente.</p>
+
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce qu'elle dit sur vous ?</div>
+        <textarea id="voix1" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce qu'elle dit de vous ?</div>
+        <textarea id="voix2" rows="2" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Le scénario catastrophe</div>
+      <div class="q-group">
+        <div class="question-hint">Quel est le pire que vous vous imaginez dans cette situation ?</div>
+        <textarea id="scenario" rows="3" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Le pont vers la croyance</div>
+      <div class="q-group">
+        <div class="question-hint">Si cela arrivait vraiment — qu'est-ce que les autres penseraient de vous ?</div>
+        <textarea id="autres" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Et vous, qu'est-ce que vous penseriez de vous ?</div>
+        <textarea id="moi" rows="2" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Ma croyance limitante</div>
+      <p class="question-hint">Formulez en une phrase ce que vous croyez vrai de vous. Elle commence souvent par : « Je suis… » · « Je ne suis pas… » · « Ce n'est pas pour moi… » · « Si je fais ça, alors… »</p>
+      <textarea class="textarea-encadre" id="croyance" rows="2" placeholder="Je..."></textarea>
+
+      <div style="margin-top: 20px;">
+        <div class="question-label">À quel point cette phrase sonne-t-elle vrai pour vous ?</div>
+        <div class="question-hint">Cliquez sur un chiffre. En dessous de 7 — creusez encore avant de passer à la suite.</div>
+        <div class="echelle" id="echelle1"></div>
+        <div class="echelle-hint" id="echelle1hint"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Et une croyance qui, elle, vous sert</div>
+      <div class="question-hint">Notez ici une chose que vous croyez sur vous et qui vous donne de la force.</div>
+      <textarea id="croyanceaidante" rows="2" placeholder="Je..."></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-secondary" onclick="goTo(1)">← Retour</button>
+      <button class="btn btn-primary" onclick="goTo(3)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 3 -->
+  <div class="etape" id="etape-3">
+    <div class="intro-block">
+      Maintenant que vous avez identifié votre croyance, examinez ce qui la fragilise — et ce qu'elle vous coûte vraiment.
+    </div>
+
+    <div class="section">
+      <div class="section-title">Les preuves</div>
+      <div class="q-group">
+        <div class="question-hint">Est-ce que cette croyance est un fait réel, ou une interprétation que vous avez construite ?</div>
+        <textarea id="preuve1" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Y a-t-il une situation, même petite, où cette croyance ne s'est pas vérifiée ?</div>
+        <textarea id="preuve2" rows="3" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce qui prouverait concrètement qu'elle est fausse ?</div>
+        <textarea id="preuve3" rows="2" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Le regard extérieur</div>
+      <div class="q-group">
+        <div class="question-hint">Si un ami proche vous entendait formuler cette croyance, que vous dirait-il ?</div>
+        <textarea id="ami" rows="3" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Diriez-vous la même chose à quelqu'un que vous estimez et qui vivrait la même situation ?</div>
+        <textarea id="estime" rows="2" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Les bénéfices de la croyance</div>
+      <p class="question-hint">Cette croyance a peut-être joué un rôle utile à un moment de votre vie. Lequel ?</p>
+      <div class="q-group">
+        <textarea id="benefice0" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce que vous gagnez à penser comme cela ? Quels bénéfices vous apporte-t-elle ?</div>
+        <textarea id="benefice1" rows="2" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Qu'est-ce que vous gagneriez si cette croyance n'existait plus ?</div>
+        <textarea id="benefice2" rows="3" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <div class="section">
+      <div class="section-title vert">Formulez votre pensée alternative</div>
+      <div class="intro-block" style="border-left-color: var(--vert);">
+        Vous avez examiné votre croyance sous plusieurs angles. Il est temps de la remplacer — non pas par un slogan, mais par une phrase que vous pouvez vraiment croire.
+      </div>
+
+      <div class="criteres">
+        <span class="critere">Vraie, au moins en partie</span>
+        <span class="critere">Orientée progression</span>
+        <span class="critere">Dans vos propres mots</span>
+      </div>
+
+      <div class="amorces">
+        <p>Pour vous inspirer :</p>
+        <div class="amorce-item">« Pour l'instant, je n'ai pas encore… »</div>
+        <div class="amorce-item">« Cette difficulté existe, mais elle n'est pas une preuve de… »</div>
+        <div class="amorce-item">« Je peux progresser par étapes en… »</div>
+      </div>
+
+      <textarea class="textarea-encadre vert" id="alternative" rows="2" placeholder="Ma pensée alternative..."></textarea>
+
+      <div style="margin-top: 20px;">
+        <div class="question-label">À quel point pouvez-vous croire cette nouvelle phrase ?</div>
+        <div class="question-hint">En dessous de 6 — reformulez : elle n'est pas encore assez vraie pour vous.</div>
+        <div class="echelle" id="echelle2"></div>
+        <div class="echelle-hint" id="echelle2hint"></div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-secondary" onclick="goTo(2)">← Retour</button>
+      <button class="btn btn-primary" onclick="goTo(4)">Continuer →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 4 -->
+  <div class="etape" id="etape-4">
+    <div class="intro-block">
+      Vous venez de mesurer ce que cette croyance vous coûte et d'identifier ce qui pourrait la remplacer. Avant d'agir, prenez un moment pour clarifier votre intérêt à changer.
+    </div>
+
+    <div class="section">
+      <div class="section-title">Votre intérêt à changer</div>
+      <div class="question-hint">En quoi avez-vous intérêt à dépasser cette croyance — concrètement, dans votre vie professionnelle ?</div>
+      <textarea class="textarea-encadre" id="interet" rows="3" placeholder=""></textarea>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Protection · Permission · Puissance</div>
+      <div class="ppp-grid">
+        <div class="ppp-item">
+          <div class="ppp-label">Protection</div>
+          <div class="question-hint" style="margin-bottom: 8px;">Qu'est-ce qui (ou qui) pourrait vous rassurer ou vous soutenir dans cette démarche ?</div>
+          <textarea id="protection" rows="2" placeholder=""></textarea>
+        </div>
+        <div class="ppp-item">
+          <div class="ppp-label">Permission</div>
+          <div class="question-hint" style="margin-bottom: 8px;">Qu'est-ce que vous vous autorisez à faire ?</div>
+          <textarea id="permission" rows="2" placeholder=""></textarea>
+        </div>
+        <div class="ppp-item">
+          <div class="ppp-label">Puissance</div>
+          <div class="question-hint" style="margin-bottom: 8px;">Quelle force, quelle compétence, quelle expérience passée pouvez-vous mobiliser pour avancer ?</div>
+          <textarea id="puissance" rows="2" placeholder=""></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Mon premier pas</div>
+      <div class="q-group">
+        <div class="question-hint">Quel est le plus petit pas que vous pourriez faire cette semaine pour tester une nouvelle façon d'être ?</div>
+        <textarea id="premierPas" rows="3" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Avec qui ?</div>
+        <textarea id="avecQui" rows="1" placeholder=""></textarea>
+      </div>
+      <div class="q-group">
+        <div class="question-hint">Quand exactement ?</div>
+        <textarea id="quand" rows="1" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Ancrage</div>
+      <div class="question-hint">Comment vous sentez-vous quand vous imaginez avoir fait ce premier pas ?</div>
+      <textarea id="ancrage" rows="2" placeholder=""></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-secondary" onclick="goTo(3)">← Retour</button>
+      <button class="btn btn-primary" onclick="goTo(5)">Voir ma synthèse →</button>
+    </div>
+  </div>
+
+  <!-- ÉTAPE 5 — SYNTHÈSE -->
+  <div class="etape" id="etape-5">
+    <div class="section">
+      <div class="section-title">Ce que je retiens de cet exercice</div>
+      <div class="question-hint">En une phrase.</div>
+      <textarea class="textarea-encadre" id="retiens" rows="3" placeholder="Ce que je retiens..."></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-secondary" onclick="goTo(4)">← Retour</button>
+      <button class="btn btn-primary" id="btnPDF" onclick="telechargerPDF()">⬇ Télécharger ma synthèse PDF</button>
+    </div>
+
+    <div class="footer" style="margin-top: 32px;">yohanboilleaut.com · Formation développement professionnel</div>
+  </div>
+
+</div><!-- /main -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const etapes = [
+  { id: 1, label: "Situation" },
+  { id: 2, label: "Croyance" },
+  { id: 3, label: "Challenge" },
+  { id: 4, label: "Action" },
+  { id: 5, label: "Synthèse" },
+];
+
+const titres = [
+  "Identifiez votre situation",
+  "Faites émerger la croyance",
+  "Challengez votre croyance",
+  "Mise en mouvement",
+  "Synthèse",
+];
+
+let current = 1;
+
+// Nav dots
+const nav = document.getElementById('stepsNav');
+etapes.forEach(e => {
+  const btn = document.createElement('button');
+  btn.className = 'step-dot' + (e.id === 1 ? ' active' : '');
+  btn.id = `dot-${e.id}`;
+  btn.title = e.label;
+  btn.onclick = () => goTo(e.id);
+  nav.appendChild(btn);
+});
+
+// Échelles
+function buildEchelle(containerId, hintId, isVert, threshold, thresholdMsg) {
+  const el = document.getElementById(containerId);
+  for (let i = 1; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'echelle-btn';
+    btn.textContent = i;
+    btn.dataset.val = i;
+    btn.onclick = () => {
+      el.querySelectorAll('.echelle-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      if (isVert) btn.classList.add('vert');
+      const hint = document.getElementById(hintId);
+      if (i < threshold) {
+        hint.textContent = thresholdMsg;
+        hint.style.color = '#E07070';
+      } else {
+        hint.textContent = '✓';
+        hint.style.color = '#7BAF85';
+      }
+    };
+    el.appendChild(btn);
+  }
+}
+
+buildEchelle('echelle1', 'echelle1hint', false, 7, '↩ Creusez encore — reformulez votre croyance avant de continuer.');
+buildEchelle('echelle2', 'echelle2hint', true, 6, '↩ Reformulez — cette phrase n\'est pas encore assez vraie pour vous.');
+
+function goTo(n) {
+  document.getElementById(`etape-${current}`).classList.remove('active');
+  document.getElementById(`dot-${current}`).classList.remove('active');
+  document.getElementById(`dot-${current}`).classList.add('done');
+  current = n;
+  document.getElementById(`etape-${current}`).classList.remove('active');
+  void document.getElementById(`etape-${current}`).offsetWidth;
+  document.getElementById(`etape-${current}`).classList.add('active');
+  document.getElementById(`dot-${current}`).classList.remove('done');
+  document.getElementById(`dot-${current}`).classList.add('active');
+  document.getElementById('etapeBadge').textContent = `Étape ${current} sur 5`;
+  document.getElementById('etapeTitre').textContent = titres[current - 1];
+  const pct = ((current - 1) / 4) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function telechargerPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const W = 210;
+  const marginL = 22, marginR = 22;
+  const contentW = W - marginL - marginR;
+  let y = 0;
+
+  const NOIR    = [26, 26, 26];
+  const TEXTE   = [68, 68, 68];
+  const GRIS    = [136, 136, 136];
+  const ACCENT  = [200, 169, 81];
+  const VERT    = [123, 175, 133];
+  const LIGNE   = [232, 232, 228];
+  const BGACCENT= [245, 237, 208];
+  const BGVERT  = [239, 245, 240];
+  const BGSURFACE=[244,243,240];
+
+  function checkPage(needed) {
+    if (y + needed > 272) { doc.addPage(); y = 20; }
+  }
+
+  function drawHeader() {
+    // Fond header
+    doc.setFillColor(255,255,255);
+    doc.rect(0, 0, W, 22, 'F');
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NOIR);
+    doc.text('Exercice individuel — Synthèse', marginL, 13);
+    // Ligne accent
+    doc.setDrawColor(...ACCENT);
+    doc.setLineWidth(0.8);
+    doc.line(marginL, 16, marginL + 28, 16);
+    // Footer
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...GRIS);
+    doc.text('yohanboilleaut.com · Formation développement professionnel', W/2, 290, { align: 'center' });
+    y = 26;
+  }
+
+  function sectionTitle(text, isVert) {
+    checkPage(10);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...(isVert ? VERT : ACCENT));
+    doc.text(text.toUpperCase(), marginL, y);
+    doc.setDrawColor(...(isVert ? VERT : ACCENT));
+    doc.setLineWidth(0.3);
+    doc.line(marginL, y + 1.5, marginL + contentW, y + 1.5);
+    y += 7;
+  }
+
+  function questionLabel(text) {
+    checkPage(8);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...NOIR);
+    const lines = doc.splitTextToSize(text, contentW);
+    doc.text(lines, marginL, y);
+    y += lines.length * 4.5;
+  }
+
+  function reponse(text, encadre, isVert) {
+    if (!text) { y += 2; return; }
+    const lines = doc.splitTextToSize(text, contentW - (encadre ? 6 : 0));
+    const h = lines.length * 5 + (encadre ? 8 : 4);
+    checkPage(h + 4);
+
+    if (encadre) {
+      const bg = isVert ? BGVERT : BGACCENT;
+      const border = isVert ? VERT : ACCENT;
+      doc.setFillColor(...bg);
+      doc.setDrawColor(...border);
+      doc.setLineWidth(0.6);
+      doc.roundedRect(marginL, y - 2, contentW, h, 2, 2, 'FD');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bolditalic');
+      doc.setTextColor(...NOIR);
+      doc.text(lines, marginL + 4, y + 4);
+      y += h + 4;
+    } else {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...TEXTE);
+      doc.text(lines, marginL, y);
+      y += lines.length * 5 + 2;
+    }
+  }
+
+  function item(label, text, encadre, isVert) {
+    checkPage(20);
+    questionLabel(label);
+    reponse(text || '—', encadre, isVert);
+    y += 3;
+  }
+
+  function sep() {
+    checkPage(8);
+    doc.setDrawColor(...LIGNE);
+    doc.setLineWidth(0.3);
+    doc.line(marginL, y, marginL + contentW, y);
+    y += 6;
+  }
+
+  function encadreInfo(text) {
+    const lines = doc.splitTextToSize(text, contentW - 8);
+    const h = lines.length * 4.5 + 8;
+    checkPage(h + 4);
+    doc.setFillColor(...BGSURFACE);
+    doc.setDrawColor(...LIGNE);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(marginL, y - 2, contentW, h, 2, 2, 'FD');
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(...GRIS);
+    doc.text(lines, marginL + 4, y + 4);
+    y += h + 4;
+  }
+
+  // ── BUILD ──
+  drawHeader();
+
+  // Confidentialité
+  encadreInfo('Ce travail est strictement confidentiel. Le partage avec le groupe se fait sur la base du volontariat uniquement.');
+  y += 2;
+
+  // ÉTAPE 1
+  sep();
+  sectionTitle('Étape 1 — Situation');
+  item('Ma situation', val('situation'));
+  item('Ce que je me dis dans ces moments', val('dit'));
+  item('Ce que je ressens', val('ressent'));
+  item('Ce que je fais ou évite', val('fait'));
+
+  // ÉTAPE 2
+  sep();
+  sectionTitle('Étape 2 — Croyance');
+  item('La petite voix dit sur moi', val('voix1') + (val('voix2') ? '\n' + val('voix2') : ''));
+  item('Mon scénario catastrophe', val('scenario'));
+  item('Ce que les autres penseraient', val('autres'));
+  item('Ce que je penserais de moi', val('moi'));
+  item('Ma croyance limitante', val('croyance'), true, false);
+  if (val('croyanceaidante')) {
+    item('Ma croyance aidante', val('croyanceaidante'));
+  }
+
+  // ÉTAPE 3
+  sep();
+  sectionTitle('Étape 3 — Challenge');
+  item('Fait ou interprétation ?', val('preuve1'));
+  item('Une exception à ma croyance', val('preuve2'));
+  item('Ce qu\'un ami me dirait', val('ami'));
+  item('Les bénéfices de ma croyance', val('benefice1'));
+  item('Ce que je gagnerais sans cette croyance', val('benefice2'));
+  item('Ma pensée alternative', val('alternative'), true, true);
+
+  // ÉTAPE 4
+  sep();
+  sectionTitle('Étape 4 — Mise en mouvement');
+  item('Mon intérêt à changer', val('interet'), true, false);
+  item('Protection', val('protection'));
+  item('Permission', val('permission'));
+  item('Puissance', val('puissance'));
+
+  const premierPasComplet = [
+    val('premierPas'),
+    val('avecQui') ? 'Avec : ' + val('avecQui') : '',
+    val('quand') ? 'Quand : ' + val('quand') : '',
+  ].filter(Boolean).join('\n');
+  item('Mon premier pas', premierPasComplet);
+  item('Mon ancrage', val('ancrage'));
+
+  // SYNTHÈSE FINALE
+  sep();
+  sectionTitle('Ce que je retiens');
+  item('En une phrase', val('retiens'), true, false);
+
+  doc.save('ma-synthese-croyances.pdf');
+}
+
+
+document.querySelectorAll('.abc-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.abc-item').forEach(i => i.classList.remove('selected'));
+    item.classList.add('selected');
+    item.querySelector('input').checked = true;
+  });
+});
+
+// Auto-resize textareas
+document.querySelectorAll('textarea').forEach(ta => {
+  ta.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
+});
+</script>
+
+<style media="print">
+  .header, .steps-nav, .nav, .progress-bar { display: none !important; }
+  .etape { display: block !important; page-break-inside: avoid; }
+  body { background: white; }
+</style>
+
+</body>
+</html>
