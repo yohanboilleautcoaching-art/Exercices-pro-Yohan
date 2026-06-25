@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B2B vs B2C — Outil de réflexion</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --b2c: #C8102E;
+  --b2b: #1A5C96;
+  --b2c-bg: #fdf2f3;
+  --b2b-bg: #f0f5fb;
+  --b2c-border: #f0b8bf;
+  --b2b-border: #b0cce6;
+  --ecart-bg: #fffbea;
+  --ecart-border: #f0d070;
+  --ecart-color: #7a5800;
+  --text: #1a1a1a;
+  --text-muted: #666;
+  --bg: #ffffff;
+  --surface: #f7f6f3;
+  --border: #e0ddd6;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.header {
+  border-bottom: 3px solid var(--text);
+  padding: 2.5rem 3rem 2rem;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.header-kicker {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+h1 {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.header-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-family: 'Arial', sans-serif;
+  font-style: italic;
+  max-width: 560px;
+}
+
+.participant-block {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.participant-field label {
+  display: block;
+  font-family: 'Arial', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.participant-field input {
+  width: 100%;
+  border: none;
+  border-bottom: 1.5px solid var(--border);
+  background: transparent;
+  font-family: 'Arial', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  padding: 4px 0;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.participant-field input:focus { border-bottom-color: var(--text); }
+
+.main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 3rem 6rem;
+}
+
+/* CATEGORY BLOCK */
+.category-block {
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.cat-header {
+  padding: 1rem 1.25rem 0.9rem;
+  background: var(--text);
+  color: #fff;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.cat-num {
+  font-family: 'Arial', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.cat-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cat-questions {
+  padding: 0.9rem 1.25rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.cat-questions-label {
+  font-family: 'Arial', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.cat-questions ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cat-questions ul li {
+  font-family: 'Arial', sans-serif;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.5;
+}
+.cat-questions ul li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #bbb;
+  font-style: normal;
+}
+
+/* RESPONSE ZONES */
+.response-zones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+
+.zone {
+  padding: 1rem 1.25rem;
+}
+.zone.b2c-zone {
+  border-right: 1px solid var(--b2c-border);
+  background: var(--b2c-bg);
+}
+.zone.b2b-zone {
+  background: var(--b2b-bg);
+}
+
+.zone-label {
+  font-family: 'Arial', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.zone-label.b2c { color: var(--b2c); }
+.zone-label.b2b { color: var(--b2b); }
+
+.ecart-zone {
+  padding: 1rem 1.25rem;
+  background: var(--ecart-bg);
+  border-top: 1px dashed var(--ecart-border);
+}
+.ecart-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.ecart-badge {
+  font-family: 'Arial', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #fde68a;
+  color: var(--ecart-color);
+  border: 1px solid var(--ecart-border);
+}
+
+textarea.answer-field {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.7);
+  font-family: 'Georgia', serif;
+  font-size: 13px;
+  color: var(--text);
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  line-height: 1.6;
+}
+textarea.answer-field:focus {
+  border-color: var(--text);
+  background: #fff;
+}
+textarea.answer-field::placeholder {
+  color: #ccc;
+  font-style: italic;
+}
+
+/* STICKY BAR */
+.actions-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background: rgba(255,255,255,0.97);
+  border-top: 1.5px solid var(--border);
+  padding: 0.85rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+.bar-left { display: flex; align-items: center; gap: 12px; }
+.progress-mini {
+  width: 100px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-mini-fill {
+  height: 100%;
+  background: var(--text);
+  border-radius: 2px;
+  transition: width 0.3s;
+  width: 0%;
+}
+.completion-text {
+  font-family: 'Arial', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.btn {
+  font-family: 'Arial', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.btn:hover { background: var(--surface); border-color: #aaa; }
+.btn-primary {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+.btn-primary:hover { opacity: 0.85; }
+
+.toast {
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--text);
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  font-size: 13px;
+  padding: 9px 20px;
+  border-radius: 20px;
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+  z-index: 50;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 640px) {
+  .header, .main { padding-left: 1.25rem; padding-right: 1.25rem; }
+  h1 { font-size: 24px; }
+  .participant-block { grid-template-columns: 1fr; }
+  .response-zones { grid-template-columns: 1fr; }
+  .zone.b2c-zone { border-right: none; border-bottom: 1px solid var(--b2c-border); }
+  .actions-bar { padding: 0.85rem 1.25rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-kicker">Formation vente · Yohan Boilleaut</div>
+  <h1>B2B vs B2C<br>Outil de réflexion</h1>
+  <p class="header-sub">Pour chaque catégorie, notez vos observations B2C et B2B, puis identifiez les écarts avec votre réalité terrain.</p>
+  <div class="participant-block">
+    <div class="participant-field">
+      <label>Prénom &amp; Nom</label>
+      <input type="text" id="pNom" placeholder="Marie Dupont" />
+    </div>
+    <div class="participant-field">
+      <label>Entreprise / Secteur</label>
+      <input type="text" id="pEntreprise" placeholder="Schaeffler France" />
+    </div>
+    <div class="participant-field">
+      <label>Date</label>
+      <input type="text" id="pDate" />
+    </div>
+  </div>
+</div>
+
+<div class="main" id="mainContent">
+  <div id="categoriesContainer"></div>
+</div>
+
+<div class="actions-bar">
+  <div class="bar-left">
+    <div class="progress-mini"><div class="progress-mini-fill" id="progressFill"></div></div>
+    <span class="completion-text" id="completionText">0 / 30 réponses</span>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn" onclick="clearAll()">↺ Effacer tout</button>
+    <button class="btn btn-primary" onclick="exportPDF()">↓ Télécharger PDF</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATEGORIES = [
+  {
+    id: 1,
+    title: "Volume & taille des commandes",
+    questions: [
+      "Quelle est la taille typique d'une commande dans chaque contexte ?",
+      "Quelles conséquences sur la gestion des stocks et la logistique ?",
+      "Comment cela influe-t-il sur la politique tarifaire ?"
+    ]
+  },
+  {
+    id: 2,
+    title: "Comportement d'achat",
+    questions: [
+      "La décision d'achat est-elle rapide ou réfléchie ?",
+      "Quelle part jouent l'émotion et la rationalité ?",
+      "Quels sont les déclencheurs typiques du passage à l'acte ?"
+    ]
+  },
+  {
+    id: 3,
+    title: "Nombre de décideurs impliqués",
+    questions: [
+      "Qui valide l'achat final dans chaque contexte ?",
+      "Combien de personnes ou de services interviennent dans la décision ?",
+      "Comment cela change-t-il la stratégie commerciale ?"
+    ]
+  },
+  {
+    id: 4,
+    title: "Fréquence & récurrence des achats",
+    questions: [
+      "Les achats sont-ils ponctuels ou s'inscrivent-ils dans la durée ?",
+      "Existe-t-il des engagements contractuels sur la fréquence ?",
+      "Comment fidéliser dans chaque contexte ?"
+    ]
+  },
+  {
+    id: 5,
+    title: "Conditions tarifaires & contractuelles",
+    questions: [
+      "Le prix est-il le même pour tous les clients ?",
+      "Existe-t-il des remises, contrats ou CGV spécifiques selon les clients ?",
+      "Comment se négocient les conditions dans chaque contexte ?"
+    ]
+  },
+  {
+    id: 6,
+    title: "Modalités de paiement",
+    questions: [
+      "À quel moment le règlement intervient-il par rapport à la livraison ?",
+      "Quels délais de paiement sont pratiqués dans chaque contexte ?",
+      "Quels risques cela implique-t-il pour le vendeur ?"
+    ]
+  },
+  {
+    id: 7,
+    title: "Cycle de vente",
+    questions: [
+      "Combien de temps s'écoule entre le premier contact et la signature ?",
+      "Quelles étapes jalonnent le parcours de vente dans chaque cas ?",
+      "Comment adapter son organisation commerciale à ce cycle ?"
+    ]
+  },
+  {
+    id: 8,
+    title: "Relation commerciale",
+    questions: [
+      "La relation s'arrête-t-elle à la transaction ou s'inscrit-elle dans la durée ?",
+      "Quel est le rôle du commercial après la vente ?",
+      "Comment se construit la fidélité dans chaque contexte ?"
+    ]
+  },
+  {
+    id: 9,
+    title: "Catalogue & offre produit",
+    questions: [
+      "Comment les produits sont-ils présentés et mis en valeur ?",
+      "Qu'est-ce qui est prioritairement mis en avant : l'expérience, la technique, le prix ?",
+      "Le catalogue est-il identique pour tous les clients ?"
+    ]
+  },
+  {
+    id: 10,
+    title: "Motivations d'achat",
+    questions: [
+      "Quels sont les déclencheurs profonds de l'achat dans chaque contexte ?",
+      "Ce que le client cherche vraiment à obtenir : plaisir, performance, sécurité ?",
+      "Comment adapter son argumentaire à ces motivations ?"
+    ]
+  }
+];
+
+const TOTAL = CATEGORIES.length * 3;
+
+function buildUI() {
+  document.getElementById('pDate').value = new Date().toLocaleDateString('fr-FR');
+  const container = document.getElementById('categoriesContainer');
+  container.innerHTML = '';
+
+  CATEGORIES.forEach((cat, idx) => {
+    const block = document.createElement('div');
+    block.className = 'category-block';
+    block.innerHTML = `
+      <div class="cat-header">
+        <span class="cat-num">${String(idx+1).padStart(2,'0')}</span>
+        <span class="cat-title">${cat.title}</span>
+      </div>
+      <div class="cat-questions">
+        <div class="cat-questions-label">Questions à se poser</div>
+        <ul>${cat.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+      </div>
+      <div class="response-zones">
+        <div class="zone b2c-zone">
+          <div class="zone-label b2c">B2C</div>
+          <textarea class="answer-field" id="f_${cat.id}_b2c" placeholder="Vos observations en B2C…" oninput="updateProgress()"></textarea>
+        </div>
+        <div class="zone b2b-zone">
+          <div class="zone-label b2b">B2B</div>
+          <textarea class="answer-field" id="f_${cat.id}_b2b" placeholder="Vos observations en B2B…" oninput="updateProgress()"></textarea>
+        </div>
+      </div>
+      <div class="ecart-zone">
+        <div class="ecart-header">
+          <span class="ecart-badge">⚡ Écart terrain</span>
+        </div>
+        <textarea class="answer-field" id="f_${cat.id}_ecart" placeholder="Y a-t-il des écarts entre les comportements théoriques et ceux observés dans votre entreprise ? Lesquels ?" oninput="updateProgress()"></textarea>
+      </div>
+    `;
+    container.appendChild(block);
+  });
+}
+
+function updateProgress() {
+  let filled = 0;
+  CATEGORIES.forEach(cat => {
+    ['b2c','b2b','ecart'].forEach(k => {
+      const el = document.getElementById(`f_${cat.id}_${k}`);
+      if (el && el.value.trim()) filled++;
+    });
+  });
+  document.getElementById('progressFill').style.width = (filled / TOTAL * 100) + '%';
+  document.getElementById('completionText').textContent = `${filled} / ${TOTAL} réponses`;
+}
+
+function clearAll() {
+  if (!confirm('Effacer toutes vos réponses ? Cette action est irréversible.')) return;
+  CATEGORIES.forEach(cat => {
+    ['b2c','b2b','ecart'].forEach(k => {
+      const el = document.getElementById(`f_${cat.id}_${k}`);
+      if (el) el.value = '';
+    });
+  });
+  ['pNom','pEntreprise'].forEach(id => document.getElementById(id).value = '');
+  updateProgress();
+  showToast('Formulaire effacé');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+async function exportPDF() {
+  showToast('Génération du PDF…');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const pW = 210, pH = 297;
+  const mL = 14, mR = 14;
+  const cW = pW - mL - mR;
+  const nom = document.getElementById('pNom').value || '—';
+  const entreprise = document.getElementById('pEntreprise').value || '—';
+  const date = document.getElementById('pDate').value || new Date().toLocaleDateString('fr-FR');
+  let y = 14;
+
+  function addFooter() {
+    const pg = doc.getNumberOfPages();
+    doc.setFontSize(7.5);
+    doc.setTextColor(160,160,160);
+    doc.setFont('helvetica','normal');
+    doc.line(mL, pH - 11, pW - mR, pH - 11);
+    doc.text(`B2B vs B2C — Outil de réflexion  ·  ${nom}  ·  ${entreprise}`, mL, pH - 7);
+    doc.text(`Page ${pg}`, pW - mR, pH - 7, { align: 'right' });
+  }
+
+  function checkY(needed) {
+    if (y + needed > pH - 16) {
+      addFooter();
+      doc.addPage();
+      y = 14;
+    }
+  }
+
+  function textBlock(text, x, yPos, maxW, opts = {}) {
+    const { size = 9, color = [30,30,30], font = 'normal' } = opts;
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    doc.setFont('helvetica', font);
+    const lines = doc.splitTextToSize(text || '', maxW);
+    doc.text(lines, x, yPos);
+    return lines.length * (size * 0.38);
+  }
+
+  // HEADER PAGE 1
+  doc.setFillColor(26,26,26);
+  doc.rect(0, 0, pW, 42, 'F');
+  doc.setFontSize(18);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255);
+  doc.text('B2B vs B2C — Outil de réflexion', mL, 20);
+  doc.setFontSize(9);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(180,180,180);
+  doc.text('Formation vente  ·  Yohan Boilleaut  ·  yohanboilleaut.com', mL, 31);
+  y = 50;
+
+  // Participant box
+  doc.setFillColor(247,246,243);
+  doc.roundedRect(mL, y, cW, 17, 2, 2, 'F');
+  doc.setFontSize(7);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(140,140,140);
+  doc.text('PARTICIPANT', mL+3, y+5);
+  doc.text('ENTREPRISE / SECTEUR', mL+70, y+5);
+  doc.text('DATE', mL+148, y+5);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(26,26,26);
+  doc.text(nom, mL+3, y+13);
+  doc.text(entreprise, mL+70, y+13);
+  doc.text(date, mL+148, y+13);
+  y += 22;
+  addFooter();
+
+  // CATEGORIES
+  CATEGORIES.forEach((cat, idx) => {
+    checkY(40);
+
+    // Category header
+    doc.setFillColor(26,26,26);
+    doc.roundedRect(mL, y, cW, 8, 1.5, 1.5, 'F');
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(100,100,100);
+    doc.text(String(idx+1).padStart(2,'0'), mL+3, y+5.5);
+    doc.setFontSize(10);
+    doc.setTextColor(255,255,255);
+    doc.text(cat.title, mL+11, y+5.5);
+    y += 10;
+
+    // Questions
+    doc.setFillColor(247,246,243);
+    const qLineCount = cat.questions.reduce((acc, q) => acc + doc.splitTextToSize('→ ' + q, cW - 6).length, 0);
+    const qBlockH = qLineCount * 3.5 + 8;
+    checkY(qBlockH);
+    doc.rect(mL, y, cW, qBlockH, 'F');
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(140,140,140);
+    doc.text('QUESTIONS À SE POSER', mL+3, y+5);
+    let qy = y + 9;
+    cat.questions.forEach(q => {
+      const lines = doc.splitTextToSize('→  ' + q, cW - 6);
+      doc.setFontSize(8);
+      doc.setFont('helvetica','italic');
+      doc.setTextColor(90,90,90);
+      doc.text(lines, mL+3, qy);
+      qy += lines.length * 3.5;
+    });
+    y += qBlockH + 1;
+
+    // Response zones
+    const colW = (cW - 2) / 2;
+    const zones = [
+      { key: 'b2c', label: 'B2C', color: [200,16,46], bg: [253,242,243] },
+      { key: 'b2b', label: 'B2B', color: [26,92,150], bg: [240,245,251] }
+    ];
+
+    let maxZoneH = 0;
+    zones.forEach((z, zi) => {
+      const val = document.getElementById(`f_${cat.id}_${z.key}`)?.value?.trim() || '(sans réponse)';
+      const lines = doc.splitTextToSize(val, colW - 6);
+      const h = Math.max(16, lines.length * 3.8 + 10);
+      if (h > maxZoneH) maxZoneH = h;
+    });
+
+    checkY(maxZoneH + 2);
+    zones.forEach((z, zi) => {
+      const xOff = mL + zi * (colW + 2);
+      doc.setFillColor(...z.bg);
+      doc.rect(xOff, y, colW, maxZoneH, 'F');
+      doc.setFontSize(7);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(...z.color);
+      doc.text(z.label, xOff + 3, y + 5);
+      const val = document.getElementById(`f_${cat.id}_${z.key}`)?.value?.trim() || '';
+      const displayVal = val || '(sans réponse)';
+      const lines = doc.splitTextToSize(displayVal, colW - 6);
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', val ? 'normal' : 'italic');
+      doc.setTextColor(val ? 26 : 150, val ? 26 : 150, val ? 26 : 150);
+      doc.text(lines, xOff + 3, y + 10);
+    });
+    y += maxZoneH + 2;
+
+    // Ecart zone
+    const ecartVal = document.getElementById(`f_${cat.id}_ecart`)?.value?.trim() || '';
+    const ecartDisplay = ecartVal || '(sans réponse)';
+    const ecartLines = doc.splitTextToSize(ecartDisplay, cW - 6);
+    const ecartH = Math.max(16, ecartLines.length * 3.8 + 10);
+    checkY(ecartH + 2);
+    doc.setFillColor(255,251,234);
+    doc.rect(mL, y, cW, ecartH, 'F');
+    doc.setFontSize(7);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(122,88,0);
+    doc.text('⚡ ÉCART TERRAIN', mL+3, y+5);
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica', ecartVal ? 'normal' : 'italic');
+    doc.setTextColor(ecartVal ? 26 : 150, ecartVal ? 26 : 150, ecartVal ? 26 : 150);
+    doc.text(ecartLines, mL+3, y+10);
+    y += ecartH + 4;
+
+    doc.setDrawColor(220,220,220);
+    doc.line(mL, y, mL+cW, y);
+    y += 5;
+  });
+
+  // Footers on all pages
+  const total = doc.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7.5);
+    doc.setTextColor(160,160,160);
+    doc.setFont('helvetica','normal');
+    doc.setDrawColor(220,220,220);
+    doc.line(mL, pH - 11, pW - mR, pH - 11);
+    doc.text(`B2B vs B2C — Outil de réflexion  ·  ${nom}  ·  ${entreprise}`, mL, pH - 7);
+    doc.text(`Page ${i} / ${total}`, pW - mR, pH - 7, { align: 'right' });
+  }
+
+  const filename = `B2B-vs-B2C_${(nom.replace(/\s+/g,'_') || 'reflexion')}_${date.replace(/\//g,'-')}.pdf`;
+  doc.save(filename);
+  showToast('PDF téléchargé ✓');
+}
+
+buildUI();
+updateProgress();
+</script>
+</body>
+</html>
